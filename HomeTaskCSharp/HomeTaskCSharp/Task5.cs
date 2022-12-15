@@ -21,9 +21,14 @@ namespace HomeTaskCSharp
             yield return new TestCaseData("Fred:Corwill;Wilfred:Corwill;Barney:TornBull;Betty:Tornbull;Bjon:Tornbull;Raphael:Corwill;Alfred:Corwill");
         }
 
-        public static string SortGuestList(List<Guests> guestList)
+        public static string SortGuestList(string input)
         {
-            var sortedList = guestList.OrderBy(x => x.lastName.ToLower()).ThenBy(x => x.firstName.ToLower());
+            string[] str = input.Split(new char[] { ';' });
+            Dictionary<string, string> dictGuests = new Dictionary<string, string>();
+            dictGuests = str.ToDictionary(s => s.Split(':')[0], s => s.Split(':')[1]);
+
+            List<Guests> resultList = dictGuests.Select(x => new Guests() { firstName = x.Key, lastName = x.Value }).ToList();
+            var sortedList = resultList.OrderBy(x => x.lastName.ToLower()).ThenBy(x => x.firstName.ToLower());
             List<Guests> uperCaseList = sortedList.Select(x => new Guests() { firstName = x.firstName.ToUpper(), lastName = x.lastName.ToUpper() }).ToList();
 
             string result = "";
@@ -37,15 +42,9 @@ namespace HomeTaskCSharp
         }
 
         [Test, TestCaseSource("testCaseDataPersonList")]
-        public void listGuests(string input)
+        public void listGuests(string inputString)
         {
-            string[] str = input.Split(new char[] { ';' });
-            Dictionary<string, string> dictGuests = new Dictionary<string, string>();
-            dictGuests = str.ToDictionary(s => s.Split(':')[0], s => s.Split(':')[1]);
-
-            List<Guests> result = dictGuests.Select(x => new Guests() { firstName = x.Key, lastName = x.Value }).ToList();
-
-            string actualResult = SortGuestList(result);
+            string actualResult = SortGuestList(inputString);
             string expectedResul = "(CORWILL, ALFRED)(CORWILL, FRED)(CORWILL, RAPHAEL)(CORWILL, WILFRED)(TORNBULL, BARNEY)(TORNBULL, BETTY)(TORNBULL, BJON)";
 
             Assert.AreEqual(expectedResul, actualResult);
